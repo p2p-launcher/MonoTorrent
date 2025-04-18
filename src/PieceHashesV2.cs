@@ -62,7 +62,7 @@ namespace MonoTorrent
         }
 
         internal PieceHashesV2 (int pieceLength, IList<ITorrentFile> files, Dictionary<MerkleRoot, ReadOnlyMerkleTree> layers)
-            => (Files, Layers, HashCodeLength, Count, PieceLayer) = (files, layers, 32, files.Last ().EndPieceIndex + 1, BitOps.CeilLog2 (pieceLength / 16384));
+            => (Files, Layers, HashCodeLength, Count, PieceLayer) = (files, layers, 32, files.Last ().EndPieceIndex + 1, MerkleTree.LayerIndex (pieceLength));
 
         int PieceLayer { get; }
 

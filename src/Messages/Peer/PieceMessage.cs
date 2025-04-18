@@ -83,7 +83,7 @@ namespace MonoTorrent.Messages.Peer
             StartOffset = ReadInt (ref buffer);
             RequestLength = buffer.Length;
 
-            if (RequestLength > 16384)
+            if (RequestLength > Constants.BlockSize)
                 Console.WriteLine ("Huh...");
             if (!Data.IsEmpty)
                 Console.Write ("ooooops?");

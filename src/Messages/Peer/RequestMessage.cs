@@ -40,7 +40,7 @@ namespace MonoTorrent.Messages.Peer
         //
         // 'request' messages contain an index, begin, and length .... All current implementations use 2^14 (16 kiB), and close connections which request an amount greater than that.
         //
-        public static readonly int MaxSize = 16 * 1024;
+        public static readonly int MaxSize = Constants.BlockSize;
         public static readonly int MinSize = 1;
 
         public override int ByteLength => messageLength + 4;

@@ -96,7 +96,7 @@ namespace MonoTorrent.Messages.Peer
         public static HashRequestMessage CreateFromPieceLayer (MerkleRoot piecesRoot, int fileHashCount, int pieceLength, int index, int? suggestedLength)
         {
             // The layer we're requesting is the 'piece' layer.
-            var requestedLayer = BitOps.CeilLog2 (pieceLength / Constants.BlockSize);
+            var requestedLayer = MerkleTree.LayerIndex (pieceLength);
 
             // This should go elsewhere? Layers are *always* powers of two, so round fileHashCount up the to the nearest power of two.
             // An actual file may have 7 hashes, but the layer will have 8.

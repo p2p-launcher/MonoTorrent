@@ -53,7 +53,7 @@ namespace MonoTorrent
             if (pieceLayerHashCount == 1)
                 throw new ArgumentException ("A merkletree must have 2 or more hashes");
 
-            PieceLayerIndex = BitOps.CeilLog2 (pieceLength / 16384);
+            PieceLayerIndex = LayerIndex (pieceLength);
             Layers = new List<Memory<byte>> ();
 
             var finalLayer = BitOps.CeilLog2 (pieceLayerHashCount);
@@ -134,6 +134,14 @@ namespace MonoTorrent
                 verifiedMerkleTree = new ReadOnlyMerkleTree (Layers.Select (t => (ReadOnlyMemory<byte>) t).ToList ().AsReadOnly (), PieceLayerIndex);
 
             return verifiedMerkleTree != null;
+        }
+
+        public static int LayerIndex(int pieceLength)
+        {
+            if (pieceLength < 0 || BitOps.PopCount ((uint) pieceLength) != 1)
+                throw new ArgumentException ("Piece length must be positive and a power of 2", nameof (pieceLength));
+
+            return BitOps.CeilLog2 (pieceLength / Constants.BlockSize);
         }
     }
 }

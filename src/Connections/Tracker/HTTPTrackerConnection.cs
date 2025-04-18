@@ -102,12 +102,13 @@ namespace MonoTorrent.Connections.Tracker
                     continue;
 
                 Uri announceString = CreateAnnounceString (parameters, infoHash);
-                HttpResponseMessage response;
+                HttpResponseMessage? response = null;
 
                 try {
                     response = await client.GetAsync (announceString, HttpCompletionOption.ResponseHeadersRead, token);
+                    response.EnsureSuccessStatusCode ();
                 } catch (Exception e) {
-                    logger.ErrorFormatted ("Could not contact tracker {0}: {1}", Uri, e.Message);
+                    logger.ErrorFormatted ("GET {0} {1}: {2}", Uri, response?.StatusCode, e.Message);
                     logger.Debug ($"{e}");
                     return new AnnounceResponse (
                         state: TrackerState.Offline,

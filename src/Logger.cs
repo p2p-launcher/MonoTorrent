@@ -131,7 +131,7 @@ namespace MonoTorrent.Logging
                 Writer.Error (string.Format (format, p1));
         }
 
-        internal void ErrorFormatted (string format, params object[] p)
+        internal void ErrorFormatted (string format, params object?[] p)
         {
             if (Writer != null)
                 Writer.Error (string.Format (format, p));

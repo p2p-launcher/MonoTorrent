@@ -147,7 +147,7 @@ namespace MonoTorrent.Logging
         {
             if (Writer != null) {
                 string regarding = $"{connection.Uri} ({(connection.IsIncoming ? "incoming" : "outgoing")})";
-                Writer.Error ($"{regarding}: {message}");
+                Writer.Error ($"{regarding}: {message}: {ex.Message}");
                 Writer.Debug ($"{regarding}: {ex}");
             }
         }

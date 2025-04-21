@@ -155,7 +155,7 @@ namespace MonoTorrent.Connections.Peer
 
             try {
                 if (!Socket.ReceiveAsync (args))
-                    ReceiveTcs.SetResult (args.BytesTransferred);
+                    HandleOperationCompleted (Socket, ReceiveArgs);
             } catch (ObjectDisposedException) {
                 ReceiveTcs.SetResult (0);
             } finally {
@@ -185,7 +185,7 @@ namespace MonoTorrent.Connections.Peer
 
             try {
                 if (!Socket.SendAsync (args))
-                    SendTcs.SetResult (buffer.Length);
+                    HandleOperationCompleted (Socket, SendArgs);
             } catch (ObjectDisposedException) {
                 SendTcs.SetResult (0);
             } finally {

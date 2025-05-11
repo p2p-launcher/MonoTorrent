@@ -29,6 +29,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -40,6 +41,7 @@ using ReusableTasks;
 
 namespace MonoTorrent.Trackers
 {
+    [DebuggerDisplay("Tracker: {Uri}")]
     public class Tracker : ITracker
     {
         static Random Random { get; } = new Random ();
@@ -104,7 +106,7 @@ namespace MonoTorrent.Trackers
                     }
                 }
 
-                LastResponse = response;
+                LastResponse = LastAnnounceResponse = response;
                 return response;
             } finally {
                 StatusOverride = null;

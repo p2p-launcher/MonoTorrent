@@ -749,8 +749,10 @@ namespace MonoTorrent.Client
                 return false;
 
             // If we have reached the max peers allowed for this torrent, don't connect to a new peer for this torrent
-            if ((manager.Peers.ConnectedPeers.Count + manager.Peers.ConnectingToPeers.Count) >= manager.Settings.MaximumConnections)
+            if ((manager.Peers.ConnectedPeers.Count + manager.Peers.ConnectingToPeers.Count) >= manager.Settings.MaximumConnections) {
+                logger.Debug ($"Enough connections for {manager.LogName}");
                 return false;
+            }
 
             var peer = manager.Peers.AvailablePeers.FirstOrDefault (p => manager.Mode.ShouldConnect(p) == DisconnectReason.None);
 
@@ -770,14 +772,21 @@ namespace MonoTorrent.Client
 
             // If this is true, there were no peers in the available list to connect to.
             if (peer is null) {
+                string reasons = string.Join(Environment.NewLine,
+                    manager.Peers.AvailablePeers
+                           .Select(p => $"{p.Info.ConnectionUri} - {manager.Mode.ShouldConnect(p)}"));
+                logger.Debug ($"No peers available for {manager.LogName}:\n{reasons}");
+
                 return false;
             }
 
             // Remove the peer from the lists so we can start connecting to him
             manager.Peers.AvailablePeers.Remove (peer);
 
-            if (ShouldBanPeer (peer.Info, AttemptConnectionStage.BeforeConnectionEstablished))
+            if (ShouldBanPeer (peer.Info, AttemptConnectionStage.BeforeConnectionEstablished)) {
+                logger.Debug ($"Not connecting to {peer.Info.PeerId} as it is banned");
                 return false;
+            }
 
             // Connect to the peer
             logger.InfoFormatted ("Trying to connect {0} to {1}", manager.LogName, peer.Info.ConnectionUri);

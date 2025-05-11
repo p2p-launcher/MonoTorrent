@@ -108,7 +108,7 @@ namespace MonoTorrent.Connections.Tracker
                     response = await client.GetAsync (announceString, HttpCompletionOption.ResponseHeadersRead, token);
                     response.EnsureSuccessStatusCode ();
                 } catch (Exception e) {
-                    logger.ErrorFormatted ("GET {0} {1}: {2}", Uri, response?.StatusCode, e.Message);
+                    logger.Error ($"GET {Uri} {AddressFamily} {response?.StatusCode}: {e.Message}");
                     logger.Debug ($"{e}");
                     return new AnnounceResponse (
                         state: TrackerState.Offline,

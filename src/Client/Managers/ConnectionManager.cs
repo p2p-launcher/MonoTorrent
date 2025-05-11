@@ -740,26 +740,31 @@ namespace MonoTorrent.Client
             }
         }
 
-        static readonly TimeSpan minimumTimeBetweenOpportunisticUnbans = TimeSpan.FromSeconds (30);
+        static readonly TimeSpan minimumTimeBetweenOpportunisticUnbans = TimeSpan.FromSeconds (10);
         DateTimeOffset lastUnban = DateTimeOffset.UtcNow;
+        DateTimeOffset lastReport = DateTimeOffset.UtcNow;
         bool TryConnect (TorrentManager manager)
         {
             // If the torrent isn't active, don't connect to a peer for it
             if (!manager.Mode.CanAcceptConnections)
                 return false;
 
+            int connect = manager.Settings.MaximumConnections - (manager.Peers.ConnectedPeers.Count + manager.Peers.ConnectingToPeers.Count);
             // If we have reached the max peers allowed for this torrent, don't connect to a new peer for this torrent
-            if ((manager.Peers.ConnectedPeers.Count + manager.Peers.ConnectingToPeers.Count) >= manager.Settings.MaximumConnections) {
+            if (connect <= 0) {
                 logger.Debug ($"Enough connections for {manager.LogName}");
                 return false;
             }
 
-            var peer = manager.Peers.AvailablePeers.FirstOrDefault (p => manager.Mode.ShouldConnect(p) == DisconnectReason.None);
+            var candidates = manager.Peers.AvailablePeers
+                .Where (p => manager.Mode.ShouldConnect (p) == DisconnectReason.None)
+                .Take(connect)
+                .ToList();
 
-            var unbanDelay = peer is null
+            var unbanDelay = candidates.Count == 0
                 ? minimumTimeBetweenOpportunisticUnbans
                 : TimeSpan.FromTicks(8 * minimumTimeBetweenOpportunisticUnbans.Ticks);
-            if (manager.Peers.ConnectedPeers.Count == 0 && DateTimeOffset.UtcNow - lastUnban > unbanDelay) {
+            if (DateTimeOffset.UtcNow - lastUnban > unbanDelay) {
                 var banlist = BannedPeerIPAddresses.ToArray ();
                 if (banlist.Length > 0) {
                     int index = new Random ().Next (banlist.Length);
@@ -771,27 +776,35 @@ namespace MonoTorrent.Client
             }
 
             // If this is true, there were no peers in the available list to connect to.
-            if (peer is null) {
-                string reasons = string.Join(Environment.NewLine,
-                    manager.Peers.AvailablePeers
-                           .Select(p => $"{p.Info.ConnectionUri} - {manager.Mode.ShouldConnect(p)}"));
-                logger.Debug ($"No peers available for {manager.LogName}:\n{reasons}");
+            if (candidates.Count == 0) {
+                if (lastReport < DateTimeOffset.UtcNow - TimeSpan.FromSeconds (30)) {
+                    string reasons = string.Join (Environment.NewLine,
+                        manager.Peers.AvailablePeers
+                               .Select (p => $"{p.Info.ConnectionUri} - {manager.Mode.ShouldConnect (p)}")
+                               .Concat (manager.Peers.ConnectedPeers.Select (p => $"OK: {p.Peer.Info.ConnectionUri}")));
+                    logger.Debug ($"No peers available for {manager.LogName}:\n{reasons}");
+                    lastReport = DateTimeOffset.UtcNow;
+                }
 
                 return false;
             }
 
-            // Remove the peer from the lists so we can start connecting to him
-            manager.Peers.AvailablePeers.Remove (peer);
+            bool connectedToAny = false;
+            foreach (var peer in candidates) {
+                // Remove the peer from the lists so we can start connecting to him
+                manager.Peers.AvailablePeers.Remove (peer);
 
-            if (ShouldBanPeer (peer.Info, AttemptConnectionStage.BeforeConnectionEstablished)) {
-                logger.Debug ($"Not connecting to {peer.Info.PeerId} as it is banned");
-                return false;
+                if (ShouldBanPeer (peer.Info, AttemptConnectionStage.BeforeConnectionEstablished)) {
+                    logger.Debug ($"Not connecting to {peer.Info.PeerId} as it is banned");
+                    continue;
+                }
+
+                // Connect to the peer
+                logger.InfoFormatted ("Trying to connect {0} to {1}", manager.LogName, peer.Info.ConnectionUri);
+                ConnectToPeer (manager, peer);
+                connectedToAny = true;
             }
-
-            // Connect to the peer
-            logger.InfoFormatted ("Trying to connect {0} to {1}", manager.LogName, peer.Info.ConnectionUri);
-            ConnectToPeer (manager, peer);
-            return true;
+            return connectedToAny;
         }
     }
 }

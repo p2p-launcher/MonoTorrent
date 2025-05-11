@@ -333,6 +333,7 @@ namespace MonoTorrent.Connections.Tracker
                 }
             }
 
+            logger.Debug ($"{this.Uri}: {infoHash.ToHex ()} ({peers.Count} peers): update={updateInterval} min={minUpdateInterval} {warningMessage} {failureMessage}");
             return new AnnounceResponse (
                 state: TrackerState.Ok,
                 peers: new Dictionary<InfoHash, IList<PeerInfo>> { { infoHash, peers } },

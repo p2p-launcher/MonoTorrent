@@ -137,14 +137,17 @@ namespace MonoTorrent.Trackers
         internal async ReusableTask AnnounceAsync (AnnounceRequest args, CancellationToken token)
         {
             // Bail out if we're announcing too frequently for this tracker tier.
-            if (args.ClientEvent == TorrentEvent.None && !CanSendAnnounce)
+            if (args.ClientEvent == TorrentEvent.None && !CanSendAnnounce) {
+                logger.Debug ($"announce: too early. Interval: {ActiveTracker.UpdateInterval}");
                 return;
+            }
 
             if (!SentStartedEvent)
                 args = args.WithClientEvent (TorrentEvent.Started);
 
             // Update before sending an announce so 'CanSendAnnounce' starts to return 'false'.
             LastAnnounce = ValueStopwatch.StartNew ();
+            LastAnnounceSucceeded = false;
 
             // If a specific tracker is passed to this method then only announce to that tracker. Otherwise
             // we should try all trackers in a round-robin fashion.
@@ -182,8 +185,10 @@ namespace MonoTorrent.Trackers
                 var result = await DoAnnounceAsync (args, tracker, token);
                 AnnounceComplete?.Invoke (this, new AnnounceResponseEventArgs (tracker, true));
                 LastAnnounceSucceeded = true;
+                logger.InfoFormatted ("Announced to {0}", tracker.Uri);
                 return result;
             } catch {
+                logger.ErrorFormatted ("Could not announce to {0}", tracker.Uri);
                 AnnounceComplete?.Invoke (this, new AnnounceResponseEventArgs (tracker, false));
                 LastAnnounceSucceeded = false;
                 token.ThrowIfCancellationRequested ();

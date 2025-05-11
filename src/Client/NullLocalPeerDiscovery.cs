@@ -33,7 +33,7 @@ using System.Threading.Tasks;
 
 namespace MonoTorrent.Connections.Peer
 {
-    class NullLocalPeerDiscovery : ILocalPeerDiscovery
+    public sealed class NullLocalPeerDiscovery : ILocalPeerDiscovery
     {
 #pragma warning disable 0067
         public event EventHandler<LocalPeerFoundEventArgs> PeerFound {

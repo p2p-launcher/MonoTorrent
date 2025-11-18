@@ -54,7 +54,7 @@ namespace MonoTorrent.Connections
                 throw new InvalidOperationException ($"The listener could not bind to ${LocalEndPoint}. Choose a new listening endpoint.");
             if (Status == ListenerStatus.NotListening || Client == null)
                 throw new InvalidOperationException ("You must invoke StartAsync before sending or receiving a message with this listener.");
-            await Client.SendAsync (buffer, buffer.Length, endpoint).ConfigureAwait (false);
+            await Client.SendAsync (buffer.ToArray(), buffer.Length, endpoint).ConfigureAwait (false);
         }
 
         protected override void Start (CancellationToken token)

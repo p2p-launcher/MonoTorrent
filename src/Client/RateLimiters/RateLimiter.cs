@@ -45,7 +45,7 @@ namespace MonoTorrent.Client.RateLimiters
 
         public void UpdateChunks (long maxRate)
         {
-            Unlimited = maxRate == 0;
+            Unlimited = maxRate == -1;
             Interlocked.Exchange(ref chunks, maxRate);
         }
 

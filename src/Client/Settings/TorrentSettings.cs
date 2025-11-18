@@ -65,14 +65,14 @@ namespace MonoTorrent.Client
         public int MaximumConnections { get; } = 60;
 
         /// <summary>
-        /// The maximum download rate, in bytes per second, for this torrent. A value of 0 means unlimited. Defaults to 0.
+        /// The maximum download rate, in bytes per second, for this torrent. A value of -1 means unlimited. Defaults to -1.
         /// </summary>
-        public int MaximumDownloadRate { get; }
+        public int MaximumDownloadRate { get; } = -1;
 
         /// <summary>
-        /// The maximum upload rate, in bytes per second, for this torrent. A value of 0 means unlimited. defaults to 0.
+        /// The maximum upload rate, in bytes per second, for this torrent. A value of -1 means unlimited. defaults to -1.
         /// </summary>
-        public int MaximumUploadRate { get; }
+        public int MaximumUploadRate { get; } = -1;
 
         /// <summary>
         /// The BitTorrent specification requires that clients which initiate an outgoing connection to

@@ -27,4 +27,5 @@ public enum DisconnectReason
     StoppedMode,
     StoppingMode,
     ConsideredInactive,
+    BadRequest,
 }

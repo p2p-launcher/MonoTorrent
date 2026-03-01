@@ -31,6 +31,9 @@ using System;
 
 namespace MonoTorrent
 {
+    /// <summary>
+    /// Describes a single file within a torrent
+    /// </summary>
     public interface ITorrentFile
     {
         /// <summary>

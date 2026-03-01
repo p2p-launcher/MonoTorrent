@@ -54,21 +54,37 @@ namespace MonoTorrent.Messages.Peer
 
         public RequestMessage (int pieceIndex, int startOffset, int requestLength)
         {
+            if (pieceIndex < 0) throw new ArgumentOutOfRangeException(nameof(pieceIndex));
+            if (startOffset < 0) throw new ArgumentOutOfRangeException(nameof(startOffset));
+            if (requestLength < 0) throw new ArgumentOutOfRangeException(nameof(requestLength));
+
             Initialize (new BlockInfo (pieceIndex, startOffset, requestLength));
         }
 
         public override void Decode (ReadOnlySpan<byte> buffer)
         {
             PieceIndex = ReadInt (ref buffer);
+            if (PieceIndex < 0)
+                throw new MessageException($"Negative {nameof(PieceIndex)}");
             StartOffset = ReadInt (ref buffer);
+            if (StartOffset < 0)
+                throw new MessageException($"Negative {nameof(StartOffset)}");
             RequestLength = ReadInt (ref buffer);
+            if (RequestLength < 0)
+                throw new MessageException($"Negative {nameof(RequestLength)}");
         }
 
         public void Decode (ref ReadOnlySpan<byte> buffer)
         {
             PieceIndex = ReadInt (ref buffer);
+            if (PieceIndex < 0)
+                throw new MessageException($"Negative {nameof(PieceIndex)}");
             StartOffset = ReadInt (ref buffer);
+            if (StartOffset < 0)
+                throw new MessageException($"Negative {nameof(StartOffset)}");
             RequestLength = ReadInt (ref buffer);
+            if (RequestLength < 0)
+                throw new MessageException($"Negative {nameof(RequestLength)}");
         }
 
         public override int Encode (Span<byte> buffer)

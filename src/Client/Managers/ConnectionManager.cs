@@ -41,6 +41,7 @@ using MonoTorrent.Connections;
 using MonoTorrent.Connections.Peer;
 using MonoTorrent.Connections.Peer.Encryption;
 using MonoTorrent.Logging;
+using MonoTorrent.Messages;
 using MonoTorrent.Messages.Peer;
 using MonoTorrent.Messages.Peer.FastPeer;
 
@@ -474,6 +475,10 @@ namespace MonoTorrent.Client
                 id.LastMessageReceived.Restart ();
                 try {
                     torrentManager.Mode.HandleMessage (id, message, releaser);
+                } catch (MessageException ex) {
+                    logger.Info (id.Connection, ex.Message);
+                    logger.Debug ($"{ex}");
+                    torrentManager.Engine!.ConnectionManager.CleanupSocket (torrentManager, id, DisconnectReason.InternalMessageHandlingError);
                 } catch (Exception ex) {
                     logger.Exception (ex, "Unexpected error handling a message from a peer");
                     torrentManager.Engine!.ConnectionManager.CleanupSocket (torrentManager, id, DisconnectReason.InternalMessageHandlingError);

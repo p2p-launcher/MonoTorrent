@@ -46,11 +46,6 @@ namespace MonoTorrent.Messages.Peer
         ByteBufferPool.Releaser DataReleaser { get; set; }
 
         /// <summary>
-        /// The index of the block from the piece which was requested.
-        /// </summary>
-        internal int BlockIndex => StartOffset / Constants.BlockSize;
-
-        /// <summary>
         /// The length of the message in bytes
         /// </summary>
         public override int ByteLength => messageLength + RequestLength + 4;
@@ -80,13 +75,17 @@ namespace MonoTorrent.Messages.Peer
         public override void Decode (ReadOnlySpan<byte> buffer)
         {
             PieceIndex = ReadInt (ref buffer);
+            if (PieceIndex < 0)
+                throw new MessageException($"Negative {nameof(PieceIndex)}");
             StartOffset = ReadInt (ref buffer);
+            if (StartOffset < 0)
+                throw new MessageException($"Negative {nameof(StartOffset)}");
             RequestLength = buffer.Length;
 
             if (RequestLength > Constants.BlockSize)
-                Console.WriteLine ("Huh...");
+                throw new MessageException ($"{RequestLength} is larger than block size (16KiB)");
             if (!Data.IsEmpty)
-                Console.Write ("ooooops?");
+                throw new InvalidProgramException ("Memory reuse failure");
             // This buffer will be freed after the PieceWriter has finished with it
             DataReleaser = BufferPool.Rent (RequestLength, out Memory<byte> memory);
             buffer.CopyTo (memory.Span);
@@ -135,7 +134,7 @@ namespace MonoTorrent.Messages.Peer
             if (!Data.IsEmpty)
                 throw new Exception ("Der");
             (DataReleaser, Data) = value;
-        } 
+        }
 
         public override string ToString ()
         {

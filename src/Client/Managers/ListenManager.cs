@@ -156,7 +156,7 @@ namespace MonoTorrent.Client
             peerInfo = peerInfo.WithPeerId(message.PeerId);
             if (!await ConnectionGate.TryAcceptHandshakeAsync(Engine.PeerId, peerInfo, connection, man.InfoHashes.V1OrV2))
             {
-                logger.InfoFormatted(connection, "[incoming] Handshake with peer_id '{0}' rejected by the connection gate", message.PeerId);
+                logger.InfoFormatted(connection, "[incoming] Handshake with peer_id '{0}' rejected by {1}", message.PeerId, ConnectionGate);
                 return false;
             }
 

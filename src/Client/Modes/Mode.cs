@@ -284,7 +284,12 @@ namespace MonoTorrent.Client.Modes
 
         protected virtual void HandleRejectRequestMessage (PeerId id, RejectRequestMessage message)
         {
-            Manager.PieceManager.RequestRejected (id, new BlockInfo (message.PieceIndex, message.StartOffset, message.RequestLength));
+            var block = new BlockInfo (message.PieceIndex, message.StartOffset, message.RequestLength);
+            if (Manager.Torrent is null)
+                throw new MessageException ("There's no associated torrent");
+            if (message.PieceIndex >= Manager.Torrent.PieceCount)
+                throw new MessageException($"Invalid piece index {message.PieceIndex}");
+            Manager.PieceManager.RequestRejected (id, block);
         }
 
         protected virtual void HandleHaveNoneMessage (PeerId id, HaveNoneMessage message)

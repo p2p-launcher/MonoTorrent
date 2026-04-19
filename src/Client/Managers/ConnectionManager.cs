@@ -41,6 +41,7 @@ using MonoTorrent.Connections;
 using MonoTorrent.Connections.Peer;
 using MonoTorrent.Connections.Peer.Encryption;
 using MonoTorrent.Logging;
+using MonoTorrent.Messages;
 using MonoTorrent.Messages.Peer;
 using MonoTorrent.Messages.Peer.FastPeer;
 
@@ -284,8 +285,8 @@ namespace MonoTorrent.Client
                 logger.InfoFormatted(connection, "[outgoing] Received handshake message with peer id '{0}'", handshake.PeerId);
                 if (!await ConnectionGate.TryAcceptHandshakeAsync(LocalPeerId, peer.Info, connection, manager.InfoHashes.V1OrV2))
                 {
-                    logger.InfoFormatted(connection, "[outgoing] Handshake with peer_id '{0}' rejected by the connection gate", peer.Info.PeerId);
-                    throw new TorrentException("Handshake rejected by the connection gate");
+                    logger.InfoFormatted(connection, "[outgoing] Handshake with peer_id '{0}' rejected by {1}", peer.Info.PeerId, ConnectionGate);
+                    throw new TorrentException("Handshake rejected by " + ConnectionGate);
                 }
                 if (handshake.ProtocolString != Constants.ProtocolStringV100)
                     logger.Info (connection, "Received handshake but protocol was unsupported");
@@ -474,6 +475,10 @@ namespace MonoTorrent.Client
                 id.LastMessageReceived.Restart ();
                 try {
                     torrentManager.Mode.HandleMessage (id, message, releaser);
+                } catch (MessageException ex) {
+                    logger.Info (id.Connection, ex.Message);
+                    logger.Debug ($"{ex}");
+                    torrentManager.Engine!.ConnectionManager.CleanupSocket (torrentManager, id, DisconnectReason.InternalMessageHandlingError);
                 } catch (Exception ex) {
                     logger.Exception (ex, "Unexpected error handling a message from a peer");
                     torrentManager.Engine!.ConnectionManager.CleanupSocket (torrentManager, id, DisconnectReason.InternalMessageHandlingError);

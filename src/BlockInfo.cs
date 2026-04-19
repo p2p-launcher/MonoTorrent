@@ -38,7 +38,13 @@ namespace MonoTorrent
         public int RequestLength { get; }
 
         public BlockInfo (int pieceIndex, int startOffset, int requestLength)
-            => (PieceIndex, StartOffset, RequestLength) = (pieceIndex, startOffset, requestLength);
+        {
+            if (pieceIndex < 0) throw new ArgumentOutOfRangeException(nameof(pieceIndex));
+            if (startOffset < 0) throw new ArgumentOutOfRangeException(nameof(startOffset));
+            if (requestLength < 0) throw new ArgumentOutOfRangeException(nameof(requestLength));
+
+            (PieceIndex, StartOffset, RequestLength) = (pieceIndex, startOffset, requestLength);
+        }
 
         public override bool Equals (object? obj)
             => obj is BlockInfo req && Equals (req);

@@ -29,8 +29,8 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 
     <PackageReference Include="Mono.Nat" Version="3.0" />
-    <PackageReference Include="ReusableTasks" Version="4.0.0" />
-    <PackageReference Include="StandardSocketsHttpHandler" Version="2.2.0.8" Condition="$(TargetFramework) == 'netstandard2.0'" />
+    <PackageReference Include="ReusableTasks" Version="5.0.0" />
+    <PackageReference Include="StandardSocketsHttpHandler" Version="2.2.0.10" Condition="$(TargetFramework) == 'netstandard2.0'" />
     <PackageReference Include="System.Memory" Version="4.5.1" Condition="$(TargetFramework) == 'netstandard2.0'" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
